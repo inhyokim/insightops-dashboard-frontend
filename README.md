@@ -22,7 +22,7 @@ npm run build
 ./deploy.sh
 
 # 수동 Docker 실행
-docker run -d -p 3000:80 --name insightops-frontend inhyokim/insightops-dashboard-frontend:latest
+docker run -d -p 3000:80 --name insightops-dashboard-frontend inhyokim/insightops-dashboard-frontend:latest
 ```
 
 ## 📁 프로젝트 구조
