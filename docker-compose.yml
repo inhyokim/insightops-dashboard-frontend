@@ -5,26 +5,6 @@ services:
     image: inhyokim/insightops-dashboard-frontend:latest
     ports:
       - "3000:80"
-    depends_on:
-      - backend
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-    networks:
-      - app-network
-
-  # 백엔드 서비스 (실제 백엔드 이미지 사용)
-  backend:
-    image: inhyokim/insightops-dashboard-backend:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=your-db-url
-    restart: unless-stopped
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
