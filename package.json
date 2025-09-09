@@ -1,0 +1,8 @@
+{
+  "name": "insightops-dashboard-frontend",
+  "version": "1.0.0",
+  "description": "InsightOps Dashboard Frontend",
+  "scripts": {
+    "build": "echo 'Build completed' && mkdir -p dist && cp index.html dist/"
+  }
+}

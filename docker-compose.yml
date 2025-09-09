@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  # 백엔드 서비스 예시 (실제 백엔드 레포에서 구성)
+  backend:
+    image: your-backend-image:latest  # 백엔드 이미지로 교체
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=your-db-url
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
