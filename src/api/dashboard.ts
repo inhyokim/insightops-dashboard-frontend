@@ -163,6 +163,19 @@ export const getRecentMessages = async (limit = 10): Promise<MailLog[]> => {
   }));
 };
 
+export const generateMailByCategory = async (categoryId: string): Promise<{
+  subject: string;
+  content: string;
+  categoryId: string;
+  success: boolean;
+  message: string;
+}> => {
+  const response = await api.post('/api/dashboard/mail/generate', {
+    categoryId
+  });
+  return response.data;
+};
+
 export const sendMail = async (body: MailSendRequest): Promise<{ success: boolean; id: string }> => {
   const response = await api.post<{ success: boolean; id: string }>('/api/dashboard/mail/send', body);
   return response.data;
