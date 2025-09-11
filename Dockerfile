@@ -27,5 +27,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expose port
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Use envsubst to replace PORT variable in nginx config
+CMD envsubst < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp && \
+    mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf && \
+    nginx -g "daemon off;"
