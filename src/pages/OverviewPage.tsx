@@ -40,16 +40,16 @@ export const OverviewPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <KpiCard
           title="이달의 전체 VoC 건수"
-          value={overview.data?.thisMonthCount || 0}
+          value={overview.data?.totalCount || 0}
           delta={overview.data?.deltaPercent}
-          deltaLabel="전월 대비"
+          deltaLabel="이전 기간 대비"
           icon={MessageSquare}
-          tooltip="이번 달 총 VoC 건수와 전월 대비 증감률"
+          tooltip="현재 기간 총 VoC 건수와 이전 기간 대비 증감률"
         />
         <KpiCard
           title="Top Small 카테고리"
-          value={overview.data?.topSmall || '-'}
-          delta={overview.data?.topSmallShare}
+          value={overview.data?.topCategory || '-'}
+          delta={overview.data?.topRatio}
           deltaLabel="전체 비중"
           icon={TrendingUp}
           tooltip="가장 많은 VoC가 발생한 세부 카테고리"
@@ -59,7 +59,7 @@ export const OverviewPage: React.FC = () => {
       {/* 차트 영역 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryPie
-          data={share.data?.items || []}
+          data={share.data || []}
           loading={share.isLoading}
           error={!!share.error}
           title="Big 카테고리 비중"

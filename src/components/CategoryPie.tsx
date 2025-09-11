@@ -4,10 +4,10 @@ import { cn } from '../utils/cn';
 import { formatNumber, formatPercent } from '../utils/format';
 import { EmptyState } from './EmptyState';
 import { LoadingSkeleton } from './LoadingSkeleton';
-import type { CategoryShareItem } from '../types/domain';
+import type { ShareItem } from '../types/domain';
 
 interface CategoryPieProps {
-  data: CategoryShareItem[];
+  data: ShareItem[];  // 백엔드 API 응답과 일치
   loading?: boolean;
   error?: boolean;
   className?: string;
@@ -74,12 +74,12 @@ export const CategoryPie: React.FC<CategoryPieProps> = ({
       const data = payload[0].payload;
       return (
         <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-medium">{data.bigCategory}</p>
+          <p className="font-medium">{data.name}</p>
           <p className="text-sm text-gray-600">
             건수: {formatNumber(data.count)}건
           </p>
           <p className="text-sm text-gray-600">
-            비중: {formatPercent(data.sharePct)}
+            비중: {formatPercent(data.ratio)}
           </p>
         </div>
       );
@@ -112,7 +112,7 @@ export const CategoryPie: React.FC<CategoryPieProps> = ({
               height={36}
               formatter={(value, entry: any) => (
                 <span className="text-sm">
-                  {value} ({formatPercent(entry.payload.sharePct)})
+                  {value} ({formatPercent(entry.payload.ratio)})
                 </span>
               )}
             />

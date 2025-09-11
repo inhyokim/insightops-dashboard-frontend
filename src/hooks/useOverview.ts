@@ -11,7 +11,7 @@ export const useOverview = (from: string, to: string, period: Period) => {
 
   const share = useQuery({
     queryKey: ['category-share', from, to],
-    queryFn: () => getCategoryShare(from, to),
+    queryFn: () => getCategoryShare(from, to), // 이제 ShareItem[]을 직접 반환
     staleTime: 60_000,
     enabled: !!from && !!to
   });

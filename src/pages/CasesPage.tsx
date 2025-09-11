@@ -8,7 +8,7 @@ import { ErrorState } from '../components/ErrorState';
 import { getDefaultDateRange, formatLocalDate, formatCurrentTime } from '../utils/date';
 import { truncateText, getStatusColorClass } from '../utils/format';
 import { cn } from '../utils/cn';
-import type { VocListItem, FilterRequest } from '../types/domain';
+import type { CaseItem, FilterRequest } from '../types/domain';
 
 export const CasesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ export const CasesPage: React.FC = () => {
       );
     }
 
-    const cases = casesQuery.data?.items || [];
+    const cases = casesQuery.data || []; // 이제 CaseItem[]을 직접 반환
     
     if (cases.length === 0) {
       return (
@@ -78,18 +78,18 @@ export const CasesPage: React.FC = () => {
       <div className="space-y-3">
         {cases.map((vocCase) => (
           <CaseListItem
-            key={vocCase.vocId}
+            key={vocCase.vocEventId}
             case={vocCase}
-            isSelected={selectedVocId === vocCase.vocId}
-            onClick={() => handleCaseClick(vocCase.vocId)}
+            isSelected={selectedVocId === vocCase.vocEventId.toString()}
+            onClick={() => handleCaseClick(vocCase.vocEventId.toString())}
           />
         ))}
         
-        {/* 페이지네이션 */}
-        {casesQuery.data && casesQuery.data.totalPages && casesQuery.data.totalPages > 1 && (
+        {/* 페이지네이션 - 간단한 형태로 수정 (백엔드에서 페이지 정보를 별도로 제공하지 않으므로) */}
+        {cases.length >= (filters.size || 20) && (
           <div className="flex justify-center mt-6">
             <div className="flex space-x-2">
-              {Array.from({ length: Math.min(casesQuery.data.totalPages, 5) }).map((_, index) => {
+              {Array.from({ length: 5 }).map((_, index) => {
                 const page = index + 1;
                 return (
                   <button
@@ -156,7 +156,7 @@ export const CasesPage: React.FC = () => {
               케이스 상세 정보
             </h3>
             <span className="text-sm text-gray-500">
-              {detail.vocId}
+              {detail.vocEventId}
             </span>
           </div>
           
@@ -170,7 +170,7 @@ export const CasesPage: React.FC = () => {
             <div>
               <span className="text-gray-500">카테고리:</span>
               <span className="ml-2 font-medium">
-                {detail.consultingCategory}
+                {detail.consultingCategoryName}
               </span>
             </div>
             <div>
@@ -253,7 +253,7 @@ export const CasesPage: React.FC = () => {
 
         <div className="p-6 border-t bg-gray-50">
           <button
-            onClick={() => handleActionClick(detail.vocId)}
+            onClick={() => handleActionClick(detail.vocEventId.toString())}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <Send className="h-4 w-4 mr-2" />
@@ -275,7 +275,7 @@ export const CasesPage: React.FC = () => {
           </p>
         </div>
         <div className="text-sm text-gray-500">
-          총 {casesQuery.data?.totalCount || 0}건
+          총 {casesQuery.data?.length || 0}건
         </div>
       </div>
 
@@ -302,7 +302,7 @@ export const CasesPage: React.FC = () => {
 };
 
 interface CaseListItemProps {
-  case: VocListItem;
+  case: CaseItem;
   isSelected: boolean;
   onClick: () => void;
 }
@@ -331,9 +331,9 @@ const CaseListItem: React.FC<CaseListItemProps> = ({
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          {getImportanceBadge(vocCase.consultingCategory)}
+          {getImportanceBadge(vocCase.consultingCategoryName)}
           <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-            {vocCase.consultingCategory}
+            {vocCase.consultingCategoryName}
           </span>
         </div>
         <div className="flex items-center text-xs text-gray-500">
@@ -356,12 +356,12 @@ const CaseListItem: React.FC<CaseListItemProps> = ({
           )}
           {vocCase.clientGender && (
             <span>
-              {vocCase.clientGender === 'M' ? '남성' : '여성'}
+              {vocCase.clientGender === '남자' ? '남성' : vocCase.clientGender === '여자' ? '여성' : vocCase.clientGender}
             </span>
           )}
         </div>
         <span className="text-gray-400">
-          ID: {vocCase.vocId.slice(-8)}
+          ID: {vocCase.vocEventId.toString().slice(-8)}
         </span>
       </div>
     </div>

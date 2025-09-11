@@ -5,7 +5,7 @@ import type { FilterRequest } from '../types/domain';
 export const useVocCases = (params: FilterRequest) => {
   return useQuery({
     queryKey: ['voc-cases', params],
-    queryFn: () => getCases(params),
+    queryFn: () => getCases(params), // 이제 CaseItem[]을 직접 반환
     staleTime: 60_000,
     enabled: !!params.from && !!params.to
   });

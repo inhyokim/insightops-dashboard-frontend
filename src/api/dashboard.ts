@@ -2,14 +2,18 @@ import { api } from './axios';
 import type {
   OverviewDto,
   CategoryShareResponse,
+  ShareItem,
   VocListData,
   VocDetailData,
+  CaseItem,
   InsightCard,
   MailPreview,
   MailSendRequest,
   MailLog,
   Period,
+  SeriesPoint,
   TimeSeriesData,
+  SmallTrendItem,
   SmallTrendsData,
   FilterRequest
 } from '../types/domain';
@@ -21,55 +25,81 @@ export const getOverview = async (period: Period = 'daily'): Promise<OverviewDto
   return response.data;
 };
 
-export const getCategoryShare = async (from: string, to: string, granularity: string = 'month'): Promise<CategoryShareResponse> => {
-  const response = await api.get<any>('/api/dashboard/big-category-share', {
+// 새로 추가: Top Small Category API
+export const getTopSmallCategory = async (period: Period = 'daily', baseDate?: string): Promise<{
+  topCategory: string;
+  topCount: number;
+  totalCount: number;
+  topShare: number;
+}> => {
+  const response = await api.get('/api/dashboard/top-small-category', {
+    params: { 
+      period, 
+      baseDate: baseDate || new Date().toISOString().split('T')[0]
+    }
+  });
+  return response.data;
+};
+
+export const getCategoryShare = async (from: string, to: string, granularity: string = 'month'): Promise<ShareItem[]> => {
+  const response = await api.get<ShareItem[]>('/api/dashboard/big-category-share', {
     params: { granularity, from, to }
   });
-  // 백엔드 응답을 프론트엔드 형식으로 변환
-  return {
-    totalCount: response.data.reduce((sum: number, item: any) => sum + (item.count || 0), 0),
-    items: response.data.map((item: any) => ({
-      bigCategory: item.name || item.category || '',
-      count: item.count || 0,
-      sharePct: item.ratio || item.percentage || 0
-    }))
-  };
+  // 백엔드 응답이 이미 올바른 형식 (ShareItem[])
+  return response.data;
 };
 
 export const getVocSeries = async (period: Period, from: string, to: string): Promise<TimeSeriesData> => {
   const granularity = period === 'daily' ? 'day' : period === 'weekly' ? 'week' : 'month';
-  const response = await api.get<any>('/api/dashboard/total-series', {
+  const response = await api.get<SeriesPoint[]>('/api/dashboard/total-series', {
     params: { granularity, from, to }
   });
-  // 백엔드 응답을 프론트엔드 형식으로 변환
+  // 백엔드 응답(SeriesPoint[])을 차트용 형식으로 변환
   return {
-    labels: response.data.map((item: any) => {
-      if (item.x) {
-        return new Date(item.x).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-      }
-      return item.label || item.date || item.period;
-    }),
-    values: response.data.map((item: any) => item.y || item.value || item.count || 0)
+    labels: response.data.map(item => 
+      new Date(item.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+    ),
+    values: response.data.map(item => item.count)
   };
 };
 
 export const getSmallTrends = async (params: FilterRequest): Promise<SmallTrendsData> => {
-  const response = await api.get<any>('/api/dashboard/small-trends', {
+  const response = await api.get<SmallTrendItem[]>('/api/dashboard/small-trends', {
     params: {
       granularity: 'month',
       from: params.from,
       to: params.to,
       clientAge: params.age,
       clientGender: params.gender,
-      limit: 10
+      limit: 25  // 백엔드 요구사항에 맞게 25개로 변경
     }
   });
-  // 백엔드 응답을 프론트엔드 형식으로 변환
+  // 백엔드 응답(SmallTrendItem[])을 차트용 형식으로 변환
   return {
-    labels: response.data.map((item: any) => item.smallCategory || item.category || item.name),
-    values: response.data.map((item: any) => item.count || item.value || 0),
-    deltas: response.data.map((item: any) => item.deltaPercent || item.changePercent || 0)
+    labels: response.data.map(item => item.smallName),
+    values: response.data.map(item => item.count),
+    deltas: response.data.map(() => 0) // 백엔드에서 delta 정보가 없으므로 0으로 설정
   };
+};
+
+// 새로 추가: 복잡한 필터링 API
+export const getFilteredCases = async (filter: {
+  startDate: string;
+  endDate: string;
+  categories?: string[];
+  ageGroups?: string[];
+  genders?: string[];
+  page?: number;
+  size?: number;
+}): Promise<{
+  cases: CaseItem[];
+  totalCount: number;
+  filter: any;
+  page: number;
+  size: number;
+}> => {
+  const response = await api.post('/api/dashboard/filtered-cases', filter);
+  return response.data;
 };
 
 export const getInsights = async (limit = 6): Promise<InsightCard[]> => {
@@ -79,8 +109,8 @@ export const getInsights = async (limit = 6): Promise<InsightCard[]> => {
   return response.data;
 };
 
-export const getCases = async (params: FilterRequest): Promise<VocListData> => {
-  const response = await api.get<any>('/api/dashboard/cases', {
+export const getCases = async (params: FilterRequest): Promise<CaseItem[]> => {
+  const response = await api.get<CaseItem[]>('/api/dashboard/cases', {
     params: {
       from: params.from,
       to: params.to,
@@ -89,21 +119,8 @@ export const getCases = async (params: FilterRequest): Promise<VocListData> => {
       size: params.size || 20
     }
   });
-  // 백엔드 응답을 프론트엔드 형식으로 변환
-  return {
-    totalCount: response.data.length,
-    page: params.page || 1,
-    size: params.size || 20,
-    totalPages: Math.ceil(response.data.length / (params.size || 20)),
-    items: response.data.map((item: any) => ({
-      vocId: item.vocEventId?.toString() || item.id?.toString() || '',
-      consultingDate: item.consultingDate || item.date || '',
-      consultingCategory: item.consultingCategoryName || item.category || '',
-      clientAge: item.clientAge || '',
-      clientGender: item.clientGender || '',
-      summary: item.summary || item.content || ''
-    }))
-  };
+  // 백엔드 응답이 이미 올바른 형식 (CaseItem[])
+  return response.data;
 };
 
 export const getCaseDetail = async (vocId: string): Promise<VocDetailData> => {
@@ -111,9 +128,11 @@ export const getCaseDetail = async (vocId: string): Promise<VocDetailData> => {
   // 백엔드 응답을 프론트엔드 형식으로 변환
   const analysisResult = response.data.analysis_result || '';
   return {
-    vocId,
+    vocEventId: parseInt(vocId) || 0,
+    sourceSystem: 'dashboard',
     consultingDate: new Date().toISOString().slice(0, 10), // 임시값
-    consultingCategory: '상품문의', // 임시값
+    bigCategory: '조회/안내', // 임시값
+    consultingCategoryName: '상품문의', // 임시값
     clientAge: '30s', // 임시값
     clientGender: 'F', // 임시값
     summary: analysisResult.substring(0, 200) + '...',
