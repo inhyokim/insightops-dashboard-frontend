@@ -194,3 +194,4 @@ docker run -p 3000:80 insightops-dashboard-frontend
 문의사항이 있으시면 다음으로 연락해 주세요:
 - 이메일: support@insightops.com
 - 이슈 트래커: GitHub Issues
+# 배포 완료 - Thu Sep 11 09:40:51 KST 2025
