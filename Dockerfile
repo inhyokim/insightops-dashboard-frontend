@@ -27,7 +27,11 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Expose port
 EXPOSE 80
 
-# Use envsubst to replace PORT variable in nginx config
-CMD envsubst < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp && \
-    mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf && \
-    nginx -g "daemon off;"
+# Create startup script for Azure Web App compatibility
+RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
+    echo 'envsubst < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp' >> /docker-entrypoint.sh && \
+    echo 'mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf' >> /docker-entrypoint.sh && \
+    echo 'nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
+
+CMD ["/docker-entrypoint.sh"]
