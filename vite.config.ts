@@ -24,7 +24,7 @@ export default defineConfig({
   define: {
     // 환경변수 기본값 설정
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify(
-      process.env.VITE_API_BASE_URL || 'http://localhost:3002'
+      process.env.VITE_API_BASE_URL || 'http://localhost:8080'
     ),
     'import.meta.env.VITE_MOCK': JSON.stringify(
       process.env.VITE_MOCK || '0'
