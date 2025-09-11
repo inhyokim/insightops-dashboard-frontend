@@ -20,5 +20,14 @@ export default defineConfig({
   preview: {
     port: 4173,
     host: true
+  },
+  define: {
+    // 환경변수 기본값 설정
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify(
+      process.env.VITE_API_BASE_URL || 'http://localhost:3002'
+    ),
+    'import.meta.env.VITE_MOCK': JSON.stringify(
+      process.env.VITE_MOCK || '0'
+    )
   }
 })
